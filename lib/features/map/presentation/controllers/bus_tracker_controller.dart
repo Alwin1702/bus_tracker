@@ -21,7 +21,7 @@ class BusTrackerController extends ChangeNotifier {
     'MAPBOX_ACCESS_TOKEN',
   );
 
-  static const double _segmentStep = 1;
+  static const double _segmentStep = 0.1;
 
   final List<Bus> _buses = [];
   final List<BusStop> _stops = [];
