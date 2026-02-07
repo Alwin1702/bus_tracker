@@ -36,6 +36,8 @@ class Bus {
     required this.id,
     required this.name,
     required this.route,
+    required this.boarding,
+    required this.destination,
     required this.position,
     required this.heading,
     required this.speedKmh,
@@ -45,6 +47,8 @@ class Bus {
   final String id;
   final String name;
   final String route;
+  final String boarding;
+  final String destination;
   GeoPoint position;
   double heading;
   int speedKmh;

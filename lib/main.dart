@@ -83,6 +83,8 @@ final GoRouter _router = GoRouter(
                       id: 'B1',
                       name: 'Bus 1',
                       route: 'Route 1',
+                      boarding: 'Central Stop',
+                      destination: 'Terminal Stop',
                       position:
                           _initialGeoPoint ?? BusTrackerController.defaultCenter,
                       heading: 0,

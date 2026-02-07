@@ -75,6 +75,20 @@ class BusDetailsSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
+              'Boarding: ${bus.boarding}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.neutral,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Destination: ${bus.destination}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.neutral,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Text(
               'Crowd level: ${bus.crowdLevel.name.toUpperCase()}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.neutral,

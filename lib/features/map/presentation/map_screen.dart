@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -103,12 +104,97 @@ class _MapScreenState extends State<MapScreen> {
                   ],
                 ),
               ),
+              Positioned(
+                bottom: 32,
+                left: 20,
+                child: FloatingActionButton.extended(
+                  heroTag: 'nearbyBusesFab',
+                  icon: const Icon(Icons.directions_bus),
+                  label: const Text('Nearby'),
+                  onPressed: () => _showNearbyBuses(controller),
+                ),
+              ),
             ],
           );
         },
       ),
     );
   }
+
+  void _showNearbyBuses(BusTrackerController controller) {
+    if (_userLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User location not available yet.')),
+      );
+      return;
+    }
+
+    const double radiusMeters = 2000;
+    final origin = _userLocation!;
+    final entries = controller.buses
+        .map(
+          (bus) => _NearbyBus(
+            bus: bus,
+            distanceMeters: _distanceMeters(origin, bus.position),
+          ),
+        )
+        .where((entry) => entry.distanceMeters <= radiusMeters)
+        .toList()
+      ..sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        if (entries.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text('No nearby buses within 2 km.'),
+          );
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: entries.length,
+          separatorBuilder: (_, __) => const Divider(height: 16),
+          itemBuilder: (context, index) {
+            final entry = entries[index];
+            final distanceKm = entry.distanceMeters / 1000;
+            return ListTile(
+              leading: const Icon(Icons.directions_bus),
+              title: Text(entry.bus.name),
+              subtitle: Text(
+                '${entry.bus.boarding} → ${entry.bus.destination} • '
+                '${distanceKm.toStringAsFixed(2)} km away',
+              ),
+              trailing: Text('${entry.bus.speedKmh} km/h'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _openBusDetails(entry.bus, controller);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  double _distanceMeters(GeoPoint a, GeoPoint b) {
+    const earthRadius = 6371000.0;
+    final lat1 = _toRadians(a.latitude);
+    final lat2 = _toRadians(b.latitude);
+    final dLat = _toRadians(b.latitude - a.latitude);
+    final dLon = _toRadians(b.longitude - a.longitude);
+
+    final sinDLat = math.sin(dLat / 2);
+    final sinDLon = math.sin(dLon / 2);
+    final haversine =
+        sinDLat * sinDLat + math.cos(lat1) * math.cos(lat2) * sinDLon * sinDLon;
+    final c = 2 * math.atan2(math.sqrt(haversine), math.sqrt(1 - haversine));
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) => degrees * (math.pi / 180.0);
 
   void _initializeAnnotations(BusTrackerController controller) async {
     if (_mapboxMap == null) return;
@@ -194,7 +280,7 @@ class _MapScreenState extends State<MapScreen> {
       final annotation = await _busAnnotationManager!.create(
         mbx.PointAnnotationOptions(
           geometry: _toPoint(bus.position),
-          iconImage: 'bus-icon',
+          iconImage: _busIconForHeading(bus.heading),
           iconSize: 0.1,
           iconRotate: bus.heading,
           iconAnchor: mbx.IconAnchor.CENTER,
@@ -217,7 +303,7 @@ class _MapScreenState extends State<MapScreen> {
         mbx.PolylineAnnotationOptions(
           geometry: line,
           lineColor: Color(route.colorArgb).withOpacity(0.7).toARGB32(),
-          lineWidth: 4.0,
+          lineWidth: 7.0,
         ),
       );
     }
@@ -237,24 +323,38 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _loadBusIcon() async {
     if (_mapboxMap == null || _busIconLoaded) return;
     try {
-      final bytes = await rootBundle.load('assets/icons/bus.png');
-      final list = bytes.buffer.asUint8List();
-      final codec = await ui.instantiateImageCodec(list);
-      final frame = await codec.getNextFrame();
-      final image = frame.image;
-      await _mapboxMap!.style.addStyleImage(
-        'bus-icon',
-        1.0,
-        mbx.MbxImage(width: (image.width).toInt(), height: (image.height ).toInt(), data: list),
-        false,
-        [],
-        [],
-        null,
-      );
+      await _addBusStyleImage('bus-left', 'assets/icons/Bus_Left_2.png');
+      await _addBusStyleImage('bus-right', 'assets/icons/Bus_Right_2.png');
       _busIconLoaded = true;
     } catch (_) {
       _busIconLoaded = false;
     }
+  }
+
+  Future<void> _addBusStyleImage(String id, String assetPath) async {
+    final bytes = await rootBundle.load(assetPath);
+    final list = bytes.buffer.asUint8List();
+    final codec = await ui.instantiateImageCodec(list);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    await _mapboxMap!.style.addStyleImage(
+      id,
+      1.0,
+      mbx.MbxImage(
+        width: image.width.toInt(),
+        height: image.height.toInt(),
+        data: list,
+      ),
+      false,
+      [],
+      [],
+      null,
+    );
+  }
+
+  String _busIconForHeading(double heading) {
+    final normalized = (heading % 360 + 360) % 360;
+    return (normalized > 90 && normalized < 270) ? 'bus-left' : 'bus-right';
   }
 
   mbx.Point _toPoint(GeoPoint point) {
@@ -377,6 +477,13 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
   }
+}
+
+class _NearbyBus {
+  const _NearbyBus({required this.bus, required this.distanceMeters});
+
+  final Bus bus;
+  final double distanceMeters;
 }
 
 class _IconPillButton extends StatelessWidget {

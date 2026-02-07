@@ -21,7 +21,7 @@ class BusTrackerController extends ChangeNotifier {
     'MAPBOX_ACCESS_TOKEN',
   );
 
-  static const double _segmentStep = 0.001;
+  static const double _segmentStep = 1;
 
   final List<Bus> _buses = [];
   final List<BusStop> _stops = [];
@@ -157,6 +157,8 @@ class BusTrackerController extends ChangeNotifier {
           id: 'B1',
           name: 'Kozhikode Loop',
           route: 'Medical College Loop',
+          boarding: 'Medical College',
+          destination: 'Kovur',
           position: _routes[0].points.first,
           heading: 0,
           speedKmh: 28,
@@ -166,6 +168,8 @@ class BusTrackerController extends ChangeNotifier {
           id: 'B2',
           name: 'Kovur Line',
           route: 'Kovur ↔ Kunnamangalam',
+          boarding: 'Kovur',
+          destination: 'Kunnamangalam',
           position: _routes[1].points.first,
           heading: 0,
           speedKmh: 24,

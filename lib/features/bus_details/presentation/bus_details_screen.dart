@@ -79,6 +79,14 @@ class BusDetailsScreen extends StatelessWidget {
               value: nearestStop?.name ?? 'Location unavailable',
             ),
             _InfoTile(
+              label: 'Boarding',
+              value: bus.boarding,
+            ),
+            _InfoTile(
+              label: 'Destination',
+              value: bus.destination,
+            ),
+            _InfoTile(
               label: 'ETA to nearest stop',
               value: etaMinutes == null ? '--' : '$etaMinutes min',
             ),

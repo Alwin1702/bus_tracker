@@ -147,31 +147,19 @@ class _ArrivalTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              arrival.label,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-          Text(
+      child: Card(
+        child: ListTile(
+          leading: const Icon(Icons.directions_bus, color: AppColors.primary),
+          title: Text(arrival.label),
+          trailing: Text(
             '${arrival.minutes} min',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.neutral,
                 ),
           ),
-        ],
-      ),
+        ),
+      )
+      
     );
   }
 }
