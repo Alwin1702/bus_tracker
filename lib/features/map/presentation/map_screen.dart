@@ -30,6 +30,7 @@ class _MapScreenState extends State<MapScreen> {
   final Map<String, Bus> _busByAnnotationId = {};
   final Map<String, BusStop> _stopByAnnotationId = {};
   bool _routesReady = false;
+  int _routesRevision = -1;
   bool _mapReady = false;
   GeoPoint? _userLocation;
   mbx.CircleAnnotation? _userPulseAnnotation;
@@ -59,7 +60,12 @@ class _MapScreenState extends State<MapScreen> {
     return Scaffold(
       body: Consumer<BusTrackerController>(
         builder: (context, controller, _) {
+          if (_routesRevision != controller.routesRevision) {
+            _routesRevision = controller.routesRevision;
+            _routesReady = false;
+          }
           _scheduleAnnotationSync();
+          _scheduleRouteSync(controller);
           return Stack(
             children: [
               mbx.MapWidget(
@@ -147,6 +153,15 @@ class _MapScreenState extends State<MapScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _syncAnnotations(context.read<BusTrackerController>());
+      }
+    });
+  }
+
+  void _scheduleRouteSync(BusTrackerController controller) {
+    if (!_mapReady || _routeAnnotationManager == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncRoutes(controller);
       }
     });
   }

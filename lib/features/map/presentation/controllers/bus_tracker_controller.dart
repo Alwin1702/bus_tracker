@@ -1,32 +1,42 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../../models/bus.dart';
 
 class BusTrackerController extends ChangeNotifier {
   BusTrackerController() {
-    _seedRoutes();
     _seedStops();
+    _seedRoutes();
     _seedBuses();
     _startTicker();
+    unawaited(_loadRoutes());
   }
 
   static const GeoPoint defaultCenter = GeoPoint(11.2720014, 75.8375713);
 
-  static const double _segmentStep = 0.08;
+  static const String _mapboxAccessToken = String.fromEnvironment(
+    'MAPBOX_ACCESS_TOKEN',
+  );
+
+  static const double _segmentStep = 0.001;
 
   final List<Bus> _buses = [];
   final List<BusStop> _stops = [];
   final List<BusRoute> _routes = [];
+  final Map<String, List<GeoPoint>> _routeWaypointsById = {};
   final Map<String, BusRoute> _routeByBusId = {};
   final Map<String, int> _segmentIndexByBusId = {};
   final Map<String, int> _segmentDirectionByBusId = {};
   final Map<String, double> _segmentProgressByBusId = {};
+  int _routesRevision = 0;
   Timer? _ticker;
   List<Bus> get buses => List.unmodifiable(_buses);
   List<BusStop> get stops => List.unmodifiable(_stops);
   List<BusRoute> get routes => List.unmodifiable(_routes);
+  int get routesRevision => _routesRevision;
 
   @override
   void dispose() {
@@ -75,6 +85,31 @@ class BusTrackerController extends ChangeNotifier {
           ],
         ),
       ]);
+
+    _routeWaypointsById
+      ..clear()
+      ..addAll({
+        'R1': const [
+          GeoPoint(11.2720014, 75.8375713),
+          GeoPoint(11.2705706, 75.8312627),
+          GeoPoint(11.2698683, 75.8259294),
+          GeoPoint(11.2669500, 75.8204000),
+          GeoPoint(11.2713000, 75.8289000),
+        ],
+        'R2': const [
+          GeoPoint(11.2705706, 75.8312627),
+          GeoPoint(11.2720014, 75.8375713),
+          GeoPoint(11.2812000, 75.8509000),
+          GeoPoint(11.2928000, 75.8658000),
+          GeoPoint(11.3035000, 75.8735000),
+        ],
+        'R3': const [
+          GeoPoint(11.2698683, 75.8259294),
+          GeoPoint(11.2669500, 75.8204000),
+          GeoPoint(11.2632000, 75.8134000),
+          GeoPoint(11.2589000, 75.8039000),
+        ],
+      });
   }
 
   void _seedStops() {
@@ -136,24 +171,7 @@ class BusTrackerController extends ChangeNotifier {
           speedKmh: 24,
           crowdLevel: CrowdLevel.low,
         ),
-        Bus(
-          id: 'B3',
-          name: 'Chevayur Line',
-          route: 'Chevayur ↔ Kuthiravattom',
-          position: _routes[2].points.first,
-          heading: 0,
-          speedKmh: 26,
-          crowdLevel: CrowdLevel.high,
-        ),
-        Bus(
-          id: 'B4',
-          name: 'Campus Shuttle',
-          route: 'Medical College Loop',
-          position: _routes[0].points[2],
-          heading: 0,
-          speedKmh: 20,
-          crowdLevel: CrowdLevel.medium,
-        ),
+        
       ]);
 
     _routeByBusId
@@ -166,9 +184,127 @@ class BusTrackerController extends ChangeNotifier {
       });
   }
 
+  Future<void> _loadRoutes() async {
+    if (_mapboxAccessToken.isEmpty) return;
+    if (_routeWaypointsById.isEmpty) return;
+    final List<BusRoute> updated = [];
+    for (final route in _routes) {
+      final waypoints = _routeWaypointsById[route.id] ?? route.points;
+      final points = await _fetchRoutePoints(route, waypoints);
+      if (points != null && points.length >= 2) {
+        updated.add(
+          BusRoute(
+            id: route.id,
+            name: route.name,
+            colorArgb: route.colorArgb,
+            isLoop: route.isLoop,
+            points: points,
+          ),
+        );
+      } else {
+        updated.add(route);
+      }
+    }
+
+    _routes
+      ..clear()
+      ..addAll(updated);
+    _refreshRouteLookup();
+    _routesRevision++;
+    notifyListeners();
+  }
+
+  void _refreshRouteLookup() {
+    final byId = {for (final route in _routes) route.id: route};
+    _routeByBusId.updateAll((_, existing) => byId[existing.id] ?? existing);
+    for (final bus in _buses) {
+      final route = _routeByBusId[bus.id];
+      if (route != null && !_segmentIndexByBusId.containsKey(bus.id)) {
+        bus.position = route.points.first;
+      }
+    }
+  }
+
+  Future<List<GeoPoint>?> _fetchRoutePoints(
+    BusRoute route,
+    List<GeoPoint> waypoints,
+  ) async {
+    if (waypoints.length < 2) return null;
+    final coordinates = <GeoPoint>[...waypoints];
+    if (route.isLoop) {
+      final first = coordinates.first;
+      final last = coordinates.last;
+      if (first.latitude != last.latitude || first.longitude != last.longitude) {
+        coordinates.add(first);
+      }
+    }
+    final coordString = coordinates
+        .map((point) => '${point.longitude},${point.latitude}')
+        .join(';');
+    final uri = Uri.parse(
+      'https://api.mapbox.com/directions/v5/mapbox/driving/$coordString'
+      '?geometries=polyline6&overview=full&steps=false'
+      '&access_token=$_mapboxAccessToken',
+    );
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode != 200) return null;
+      final body = json.decode(response.body) as Map<String, dynamic>;
+      final routes = body['routes'] as List<dynamic>?;
+      if (routes == null || routes.isEmpty) return null;
+      final geometry = routes.first['geometry'] as String?;
+      if (geometry == null || geometry.isEmpty) return null;
+      final points = _decodePolyline6(geometry);
+      if (route.isLoop && points.isNotEmpty) {
+        final first = points.first;
+        final last = points.last;
+        if (first.latitude != last.latitude || first.longitude != last.longitude) {
+          points.add(first);
+        }
+      }
+      return points;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<GeoPoint> _decodePolyline6(String encoded) {
+    const double factor = 1e-6;
+    final List<GeoPoint> points = [];
+    int index = 0;
+    int lat = 0;
+    int lng = 0;
+
+    while (index < encoded.length) {
+      int result = 0;
+      int shift = 0;
+      int b;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20 && index < encoded.length);
+      final int dlat = (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+      lat += dlat;
+
+      result = 0;
+      shift = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20 && index < encoded.length);
+      final int dlng = (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+      lng += dlng;
+
+      points.add(GeoPoint(lat * factor, lng * factor));
+    }
+    return points;
+  }
+
   void _startTicker() {
     _ticker?.cancel();
-    _ticker = Timer.periodic(const Duration(milliseconds: 700), (_) {
+    _ticker = Timer.periodic(const Duration(milliseconds: 300), (_) {
       _advanceBuses();
     });
   }
