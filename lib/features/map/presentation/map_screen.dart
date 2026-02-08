@@ -72,7 +72,7 @@ class _MapScreenState extends State<MapScreen> {
           return Stack(
             children: [
               mbx.MapWidget(
-                key: const ValueKey('poyoMap'),
+                key: const ValueKey('BUSIO'),
                 styleUri: mbx.MapboxStyles.STANDARD,
                 cameraOptions: mbx.CameraOptions(
                   center: _toPoint(BusTrackerController.defaultCenter),
@@ -563,7 +563,7 @@ class _MapHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'POYO Live Map',
+                'BUSIO Live Map',
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),

@@ -27,7 +27,7 @@ Future<void> main() async {
     mbx.MapboxOptions.setAccessToken(_mapboxAccessToken);
   }
   _initialGeoPoint = await _resolveCurrentLocation();
-  runApp(const PoyoApp());
+  runApp(const BUSIOApp());
 }
 
 Future<GeoPoint?> _resolveCurrentLocation() async {
@@ -49,8 +49,8 @@ Future<GeoPoint?> _resolveCurrentLocation() async {
   }
 }
 
-class PoyoApp extends StatelessWidget {
-  const PoyoApp({super.key});
+class BUSIOApp extends StatelessWidget {
+  const BUSIOApp({super.key});
 
   @override
   Widget build(BuildContext context) {
