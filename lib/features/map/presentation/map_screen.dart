@@ -30,7 +30,9 @@ class _MapScreenState extends State<MapScreen> {
   mbx.PolylineAnnotationManager? _routeAnnotationManager;
   final Map<String, Bus> _busByAnnotationId = {};
   final Map<String, BusStop> _stopByAnnotationId = {};
+  final Map<String, mbx.PointAnnotation> _busAnnotationByBusId = {};
   bool _routesReady = false;
+  bool _stopsReady = false;
   int _routesRevision = -1;
   bool _mapReady = false;
   GeoPoint? _userLocation;
@@ -257,36 +259,47 @@ class _MapScreenState extends State<MapScreen> {
     if (!_busIconLoaded) {
       await _loadBusIcon();
     }
-    await _busAnnotationManager!.deleteAll();
-    await _stopAnnotationManager?.deleteAll();
-    _busByAnnotationId.clear();
-    _stopByAnnotationId.clear();
-    for (final stop in controller.stops) {
-      final annotation = await _stopAnnotationManager?.create(
-        mbx.CircleAnnotationOptions(
-          geometry: _toPoint(stop.location),
-          circleColor: Colors.green.toARGB32(),
-          circleRadius: 6.0,
-          circleStrokeWidth: 2.0,
-          circleStrokeColor: Colors.white.toARGB32(),
-        ),
-      );
-      if (annotation != null) {
-        _stopByAnnotationId[annotation.id] = stop;
+    if (!_stopsReady) {
+      await _stopAnnotationManager?.deleteAll();
+      _stopByAnnotationId.clear();
+      for (final stop in controller.stops) {
+        final annotation = await _stopAnnotationManager?.create(
+          mbx.CircleAnnotationOptions(
+            geometry: _toPoint(stop.location),
+            circleColor: Colors.green.toARGB32(),
+            circleRadius: 6.0,
+            circleStrokeWidth: 2.0,
+            circleStrokeColor: Colors.white.toARGB32(),
+          ),
+        );
+        if (annotation != null) {
+          _stopByAnnotationId[annotation.id] = stop;
+        }
       }
+      _stopsReady = true;
     }
 
     for (final bus in controller.buses) {
-      final annotation = await _busAnnotationManager!.create(
-        mbx.PointAnnotationOptions(
-          geometry: _toPoint(bus.position),
-          iconImage: _busIconForHeading(bus.heading),
-          iconSize: 0.1,
-          iconRotate: bus.heading,
-          iconAnchor: mbx.IconAnchor.CENTER,
-        ),
-      );
-      _busByAnnotationId[annotation.id] = bus;
+      final existing = _busAnnotationByBusId[bus.id];
+      if (existing == null) {
+        final annotation = await _busAnnotationManager!.create(
+          mbx.PointAnnotationOptions(
+            geometry: _toPoint(bus.position),
+            iconImage: _busIconForHeading(bus.heading),
+            iconSize: 0.1,
+            iconRotate: bus.heading,
+            iconAnchor: mbx.IconAnchor.CENTER,
+          ),
+        );
+        _busAnnotationByBusId[bus.id] = annotation;
+        _busByAnnotationId[annotation.id] = bus;
+      } else {
+        existing.geometry = _toPoint(bus.position);
+        existing.iconRotate = bus.heading;
+        existing.iconImage = _busIconForHeading(bus.heading);
+        await _busAnnotationManager!.update(existing);
+        _busByAnnotationId[existing.id] = bus;
+      }
     }
   }
 
@@ -315,6 +328,7 @@ class _MapScreenState extends State<MapScreen> {
     _userDotAnnotation = null;
     _userPulseAnnotation = null;
     _busIconLoaded = false;
+    _stopsReady = false;
     _syncAnnotations(controller);
     _syncRoutes(controller);
     _ensureUserLocationAnnotation();

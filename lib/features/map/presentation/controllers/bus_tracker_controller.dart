@@ -31,6 +31,7 @@ class BusTrackerController extends ChangeNotifier {
   final Map<String, int> _segmentIndexByBusId = {};
   final Map<String, int> _segmentDirectionByBusId = {};
   final Map<String, double> _segmentProgressByBusId = {};
+  final Set<String> _oneWayBusIds = {'B1', 'B2'};
   int _routesRevision = 0;
   Timer? _ticker;
   List<Bus> get buses => List.unmodifiable(_buses);
@@ -323,11 +324,41 @@ class BusTrackerController extends ChangeNotifier {
       if (route == null || route.points.length < 2) continue;
       if (route.isLoop) {
         _advanceLoop(bus, route);
+      } else if (_oneWayBusIds.contains(bus.id)) {
+        _advanceOneWay(bus, route);
       } else {
         _advanceBackAndForth(bus, route);
       }
     }
     notifyListeners();
+  }
+
+  void _advanceOneWay(Bus bus, BusRoute route) {
+    final points = route.points;
+    var index = _segmentIndexByBusId[bus.id] ?? 0;
+    var direction = _segmentDirectionByBusId[bus.id] ?? 1;
+    var t = _segmentProgressByBusId[bus.id] ?? 0.0;
+
+    var nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= points.length) {
+      index = direction == 1 ? 0 : points.length - 1;
+      nextIndex = index + direction;
+      t = 0.0;
+    }
+
+    final start = points[index];
+    final end = points[nextIndex];
+    t = _stepForBus(bus, t);
+    if (t >= 1.0) {
+      t -= 1.0;
+      index = nextIndex;
+    }
+
+    bus.position = _interpolate(start, end, t);
+    bus.heading = _bearing(start, end);
+    _segmentIndexByBusId[bus.id] = index;
+    _segmentDirectionByBusId[bus.id] = direction;
+    _segmentProgressByBusId[bus.id] = t;
   }
 
   void _advanceLoop(Bus bus, BusRoute route) {
