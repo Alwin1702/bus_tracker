@@ -315,7 +315,7 @@ class _MapScreenState extends State<MapScreen> {
       await _routeAnnotationManager!.create(
         mbx.PolylineAnnotationOptions(
           geometry: line,
-          lineColor: Color(route.colorArgb).withOpacity(0.7).toARGB32(),
+          lineColor: Colors.blue.withOpacity(0.7).toARGB32(),
           lineWidth: 7.0,
         ),
       );
