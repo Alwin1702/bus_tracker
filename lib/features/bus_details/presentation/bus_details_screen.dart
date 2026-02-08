@@ -90,10 +90,8 @@ class BusDetailsScreen extends StatelessWidget {
               label: 'ETA to nearest stop',
               value: etaMinutes == null ? '--' : '$etaMinutes min',
             ),
-            _InfoTile(
-              label: 'Current crowd',
-              value: bus.crowdLevel.name.toUpperCase(),
-            ),
+           
+
             const SizedBox(height: 8),
             Text(
               'Timeline',
@@ -158,17 +156,17 @@ class BusDetailsScreen extends StatelessWidget {
   List<_TimelinePreviewEntry> _mockTimeline() {
     return const [
       _TimelinePreviewEntry(
-        stopName: 'Central Stop',
+        stopName: 'Medical College Bus stop',
         scheduledTime: TimeOfDay(hour: 8, minute: 15),
         actualTime: TimeOfDay(hour: 8, minute: 17),
       ),
       _TimelinePreviewEntry(
-        stopName: 'Market Stop',
+        stopName: 'Kovur',
         scheduledTime: TimeOfDay(hour: 8, minute: 28),
         actualTime: TimeOfDay(hour: 8, minute: 25),
       ),
       _TimelinePreviewEntry(
-        stopName: 'Tech Park',
+        stopName: 'Thondayad Junction bus stop',
         scheduledTime: TimeOfDay(hour: 8, minute: 55),
         actualTime: TimeOfDay(hour: 8, minute: 54),
       ),

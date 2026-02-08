@@ -30,22 +30,22 @@ class TimelineScreen extends StatelessWidget {
   List<TimelineEntry> _mockTimeline() {
     return [
       TimelineEntry(
-        stopName: 'Central Stop',
+        stopName: 'Medical College Bus stop',
         scheduledTime: const TimeOfDay(hour: 8, minute: 15),
         actualTime: const TimeOfDay(hour: 8, minute: 17),
       ),
       TimelineEntry(
-        stopName: 'Market Stop',
+        stopName: 'Kovur',
         scheduledTime: const TimeOfDay(hour: 8, minute: 28),
         actualTime: const TimeOfDay(hour: 8, minute: 25),
       ),
       TimelineEntry(
-        stopName: 'River Stop',
+        stopName: 'Chevayur',
         scheduledTime: const TimeOfDay(hour: 8, minute: 42),
         actualTime: const TimeOfDay(hour: 8, minute: 46),
       ),
       TimelineEntry(
-        stopName: 'Tech Park',
+        stopName: 'Thondayad Junction bus stop',
         scheduledTime: const TimeOfDay(hour: 8, minute: 55),
         actualTime: const TimeOfDay(hour: 8, minute: 54),
       ),

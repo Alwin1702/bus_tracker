@@ -50,38 +50,12 @@ class BusTrackerController extends ChangeNotifier {
       ..addAll([
         BusRoute(
           id: 'R1',
-          name: 'Medical College Loop',
+          name: 'Thondayad ↔ Medical College',
           colorArgb: 0xFF2E7D32,
-          isLoop: true,
+          isLoop: false,
           points: const [
-            GeoPoint(11.2720014, 75.8375713),
-            GeoPoint(11.2705706, 75.8312627),
-            GeoPoint(11.2698683, 75.8259294),
-            GeoPoint(11.2669500, 75.8204000),
-            GeoPoint(11.2713000, 75.8289000),
-          ],
-        ),
-        BusRoute(
-          id: 'R2',
-          name: 'Kovur ↔ Kunnamangalam',
-          colorArgb: 0xFF1565C0,
-          points: const [
-            GeoPoint(11.2705706, 75.8312627),
-            GeoPoint(11.2720014, 75.8375713),
-            GeoPoint(11.2812000, 75.8509000),
-            GeoPoint(11.2928000, 75.8658000),
-            GeoPoint(11.3035000, 75.8735000),
-          ],
-        ),
-        BusRoute(
-          id: 'R3',
-          name: 'Chevayur ↔ Kuthiravattom',
-          colorArgb: 0xFFF57C00,
-          points: const [
-            GeoPoint(11.2698683, 75.8259294),
-            GeoPoint(11.2669500, 75.8204000),
-            GeoPoint(11.2632000, 75.8134000),
-            GeoPoint(11.2589000, 75.8039000),
+            GeoPoint(11.270675191264132, 75.83756766558567),
+            GeoPoint(11.264671798011175, 75.81140515142316),
           ],
         ),
       ]);
@@ -90,24 +64,8 @@ class BusTrackerController extends ChangeNotifier {
       ..clear()
       ..addAll({
         'R1': const [
-          GeoPoint(11.2720014, 75.8375713),
-          GeoPoint(11.2705706, 75.8312627),
-          GeoPoint(11.2698683, 75.8259294),
-          GeoPoint(11.2669500, 75.8204000),
-          GeoPoint(11.2713000, 75.8289000),
-        ],
-        'R2': const [
-          GeoPoint(11.2705706, 75.8312627),
-          GeoPoint(11.2720014, 75.8375713),
-          GeoPoint(11.2812000, 75.8509000),
-          GeoPoint(11.2928000, 75.8658000),
-          GeoPoint(11.3035000, 75.8735000),
-        ],
-        'R3': const [
-          GeoPoint(11.2698683, 75.8259294),
-          GeoPoint(11.2669500, 75.8204000),
-          GeoPoint(11.2632000, 75.8134000),
-          GeoPoint(11.2589000, 75.8039000),
+          GeoPoint(11.270675191264132, 75.83756766558567),
+          GeoPoint(11.264671798011175, 75.81140515142316),
         ],
       });
   }
@@ -118,33 +76,23 @@ class BusTrackerController extends ChangeNotifier {
       ..addAll([
         const BusStop(
           id: 'S1',
-          name: 'Kovur',
-          location: GeoPoint(11.2705706, 75.8312627),
+          name: 'Medical College Bus stop',
+          location: GeoPoint(11.270675191264132, 75.83756766558567),
         ),
         const BusStop(
           id: 'S2',
-          name: 'Medical College',
-          location: GeoPoint(11.2720014, 75.8375713),
+          name: 'Kovur',
+          location: GeoPoint(11.270255459446936, 75.83089949056058),
         ),
         const BusStop(
           id: 'S3',
           name: 'Chevayur',
-          location: GeoPoint(11.2698683, 75.8259294),
+          location: GeoPoint(11.269533073702855, 75.825892367432),
         ),
         const BusStop(
           id: 'S4',
-          name: 'Nellikode',
-          location: GeoPoint(11.2669500, 75.8204000),
-        ),
-        const BusStop(
-          id: 'S5',
-          name: 'Kunnamangalam',
-          location: GeoPoint(11.3035000, 75.8735000),
-        ),
-        const BusStop(
-          id: 'S6',
-          name: 'Kuthiravattom',
-          location: GeoPoint(11.2589000, 75.8039000),
+          name: 'Thondayad Junction bus stop',
+          location: GeoPoint(11.264671798011175, 75.81140515142316),
         ),
       ]);
   }
@@ -155,36 +103,52 @@ class BusTrackerController extends ChangeNotifier {
       ..addAll([
         Bus(
           id: 'B1',
-          name: 'Kozhikode Loop',
-          route: 'Medical College Loop',
-          boarding: 'Medical College',
-          destination: 'Kovur',
-          position: _routes[0].points.first,
+          name: 'KRS',
+          route: 'Thondayad ↔ Medical College',
+          boarding: 'Thondayad Junction bus stop',
+          destination: 'Medical College Bus stop',
+          position: const GeoPoint(11.264671798011175, 75.81140515142316),
           heading: 0,
           speedKmh: 28,
-          crowdLevel: CrowdLevel.medium,
         ),
         Bus(
           id: 'B2',
-          name: 'Kovur Line',
-          route: 'Kovur ↔ Kunnamangalam',
-          boarding: 'Kovur',
-          destination: 'Kunnamangalam',
-          position: _routes[1].points.first,
+          name: 'Challenger',
+          route: 'Thondayad ↔ Medical College',
+          boarding: 'Medical College Bus stop',
+          destination: 'Thondayad Junction bus stop',
+          position: const GeoPoint(11.270675191264132, 75.83756766558567),
           heading: 0,
           speedKmh: 24,
-          crowdLevel: CrowdLevel.low,
         ),
-        
       ]);
 
     _routeByBusId
       ..clear()
       ..addAll({
         'B1': _routes[0],
-        'B2': _routes[1],
-        'B3': _routes[2],
-        'B4': _routes[0],
+        'B2': _routes[0],
+      });
+
+    _segmentIndexByBusId
+      ..clear()
+      ..addAll({
+        'B1': _routes[0].points.length - 1,
+        'B2': 0,
+      });
+
+    _segmentDirectionByBusId
+      ..clear()
+      ..addAll({
+        'B1': -1,
+        'B2': 1,
+      });
+
+    _segmentProgressByBusId
+      ..clear()
+      ..addAll({
+        'B1': 0.0,
+        'B2': 0.0,
       });
   }
 
@@ -223,10 +187,50 @@ class BusTrackerController extends ChangeNotifier {
     _routeByBusId.updateAll((_, existing) => byId[existing.id] ?? existing);
     for (final bus in _buses) {
       final route = _routeByBusId[bus.id];
-      if (route != null && !_segmentIndexByBusId.containsKey(bus.id)) {
+      if (route == null || route.points.isEmpty) continue;
+      final boarding = _stopLocationByName(bus.boarding);
+      final destination = _stopLocationByName(bus.destination);
+      if (boarding != null && destination != null) {
+        final startIndex = _nearestPointIndex(route.points, boarding);
+        final endIndex = _nearestPointIndex(route.points, destination);
+        _segmentIndexByBusId[bus.id] = startIndex;
+        _segmentDirectionByBusId[bus.id] =
+            startIndex <= endIndex ? 1 : -1;
+        _segmentProgressByBusId[bus.id] = 0.0;
+        bus.position = route.points[startIndex];
+        continue;
+      }
+      final index = _segmentIndexByBusId[bus.id];
+      if (index == null) {
         bus.position = route.points.first;
+      } else {
+        final safeIndex = index.clamp(0, route.points.length - 1);
+        bus.position = route.points[safeIndex];
       }
     }
+  }
+
+  GeoPoint? _stopLocationByName(String name) {
+    for (final stop in _stops) {
+      if (stop.name == name) return stop.location;
+    }
+    return null;
+  }
+
+  int _nearestPointIndex(List<GeoPoint> points, GeoPoint target) {
+    var bestIndex = 0;
+    var bestScore = double.infinity;
+    for (var i = 0; i < points.length; i++) {
+      final point = points[i];
+      final dLat = point.latitude - target.latitude;
+      final dLon = point.longitude - target.longitude;
+      final score = dLat * dLat + dLon * dLon;
+      if (score < bestScore) {
+        bestScore = score;
+        bestIndex = i;
+      }
+    }
+    return bestIndex;
   }
 
   Future<List<GeoPoint>?> _fetchRoutePoints(

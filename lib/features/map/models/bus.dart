@@ -41,7 +41,6 @@ class Bus {
     required this.position,
     required this.heading,
     required this.speedKmh,
-    required this.crowdLevel,
   });
 
   final String id;
@@ -52,5 +51,4 @@ class Bus {
   GeoPoint position;
   double heading;
   int speedKmh;
-  CrowdLevel crowdLevel;
 }

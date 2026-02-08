@@ -81,15 +81,14 @@ final GoRouter _router = GoRouter(
                 : BusDetailsArgs(
                     bus: Bus(
                       id: 'B1',
-                      name: 'Bus 1',
-                      route: 'Route 1',
-                      boarding: 'Central Stop',
-                      destination: 'Terminal Stop',
+                      name: 'KRS',
+                      route: 'Medical College Loop',
+                      boarding: 'Medical College Bus stop',
+                      destination: 'Thondayad Junction bus stop',
                       position:
                           _initialGeoPoint ?? BusTrackerController.defaultCenter,
                       heading: 0,
                       speedKmh: 24,
-                      crowdLevel: CrowdLevel.medium,
                     ),
                     stops: const [],
                     userLocation: null,
@@ -104,7 +103,7 @@ final GoRouter _router = GoRouter(
                 : StopTimelineArgs(
                     stop: BusStop(
                       id: 'S1',
-                      name: 'Central Stop',
+                      name: 'Medical College Bus stop',
                       location:
                           _initialGeoPoint ?? BusTrackerController.defaultCenter,
                     ),
