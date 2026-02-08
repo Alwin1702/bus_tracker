@@ -82,14 +82,24 @@ class StopTimelineScreen extends StatelessWidget {
 
   List<_Arrival> _mockTimes(List<Bus> buses, {required int seed}) {
     final random = Random(seed + buses.length);
+    final now = TimeOfDay.now();
     return List.generate(5, (index) {
-      final minutes = 4 + random.nextInt(18) + index * 3;
+      final minutesFromNow = 4 + random.nextInt(18) + index * 3;
       final bus = buses.isEmpty ? null : buses[random.nextInt(buses.length)];
       return _Arrival(
         label: bus?.name ?? 'Bus',
-        minutes: minutes,
+        etaMinutes: minutesFromNow,
+        time: _addMinutes(now, minutesFromNow),
       );
     });
+  }
+
+  TimeOfDay _addMinutes(TimeOfDay base, int minutes) {
+    final total = base.hour * 60 + base.minute + minutes;
+    final normalized = total % (24 * 60);
+    final hour = normalized ~/ 60;
+    final minute = normalized % 60;
+    return TimeOfDay(hour: hour, minute: minute);
   }
 }
 
@@ -115,7 +125,7 @@ class _TimelineColumn extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             title,
@@ -123,8 +133,15 @@ class _TimelineColumn extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
           ),
-          const SizedBox(height: 12),
-          ...times.map((arrival) => _ArrivalTile(arrival: arrival)),
+          Expanded(
+            child: ListView(
+              children: [
+                
+                const SizedBox(height: 12),
+                ...times.map((arrival) => _ArrivalTile(arrival: arrival)),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -132,10 +149,11 @@ class _TimelineColumn extends StatelessWidget {
 }
 
 class _Arrival {
-  _Arrival({required this.label, required this.minutes});
+  _Arrival({required this.label, required this.etaMinutes, required this.time});
 
   final String label;
-  final int minutes;
+  final int etaMinutes;
+  final TimeOfDay time;
 }
 
 class _ArrivalTile extends StatelessWidget {
@@ -151,10 +169,17 @@ class _ArrivalTile extends StatelessWidget {
         child: ListTile(
           leading: const Icon(Icons.directions_bus, color: AppColors.primary),
           title: Text(arrival.label),
-          trailing: Text(
-            '${arrival.minutes} min',
+          subtitle: Text(
+            'ETA ${arrival.etaMinutes+2} min',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.neutral,
+                ),
+          ),
+          trailing: Text(
+            _formatTime(arrival.time),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.neutral,
+                  fontWeight: FontWeight.w600,
                 ),
           ),
         ),
@@ -162,4 +187,11 @@ class _ArrivalTile extends StatelessWidget {
       
     );
   }
+}
+
+String _formatTime(TimeOfDay time) {
+  final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+  final minute = time.minute.toString().padLeft(2, '0');
+  final suffix = time.period == DayPeriod.am ? 'AM' : 'PM';
+  return '$hour:$minute $suffix';
 }
