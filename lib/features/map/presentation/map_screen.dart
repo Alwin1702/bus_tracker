@@ -86,7 +86,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
               Positioned(top: 56, left: 20, right: 20, child: _MapHeader()),
               Positioned(
-                bottom: 32,
+                bottom: 120,
                 right: 20,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -102,18 +102,24 @@ class _MapScreenState extends State<MapScreen> {
                       label: 'Center',
                       onPressed: _recenterToUser,
                     ),
-                    const SizedBox(height: 12),
                   ],
                 ),
               ),
               Positioned(
                 bottom: 32,
-                left: 20,
-                child: FloatingActionButton.extended(
-                  heroTag: 'nearbyBusesFab',
-                  icon: const Icon(Icons.directions_bus),
-                  label: const Text('Nearby'),
-                  onPressed: () => _showNearbyBuses(controller),
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: FloatingActionButton.extended(
+                    elevation: 25,
+                    isExtended: true,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.secondary,
+                    heroTag: 'nearbyBusesFab',
+                    icon: const Icon(Icons.directions_bus, size: 28),
+                    label: const Text('Nearby Buses', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    onPressed: () => _showNearbyBuses(controller),
+                  ),
                 ),
               ),
             ],

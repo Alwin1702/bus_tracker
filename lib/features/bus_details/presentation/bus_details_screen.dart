@@ -79,14 +79,6 @@ class BusDetailsScreen extends StatelessWidget {
               value: nearestStop?.name ?? 'Location unavailable',
             ),
             _InfoTile(
-              label: 'Boarding',
-              value: bus.boarding,
-            ),
-            _InfoTile(
-              label: 'Destination',
-              value: bus.destination,
-            ),
-            _InfoTile(
               label: 'ETA to nearest stop',
               value: etaMinutes == null ? '--' : '$etaMinutes min',
             ),
@@ -107,9 +99,20 @@ class BusDetailsScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
+                style: ButtonStyle(
+                  padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(vertical: 20),
+
+                  ),
+                  backgroundColor: WidgetStateProperty.all(AppColors.primary),
+                  foregroundColor: WidgetStateProperty.all(Colors.white),
+                ),
+
                 onPressed: () => showCctvModal(context, bus: bus),
-                icon: const Icon(Icons.videocam_rounded),
-                label: const Text('Open Live Camera Feed'),
+                icon: const Icon(Icons.videocam_rounded,size: 30,),
+                label: const Text('Open Live Camera',
+                style: TextStyle(fontWeight: FontWeight.bold,
+                fontSize: 18),),
               ),
             ),
           ],
@@ -214,7 +217,6 @@ class _TimelinePreviewTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.timeline, color: AppColors.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Column(

@@ -83,7 +83,7 @@ class StopTimelineScreen extends StatelessWidget {
   List<_Arrival> _mockTimes(List<Bus> buses, {required int seed}) {
     final random = Random(seed + buses.length);
     final now = TimeOfDay.now();
-    return List.generate(5, (index) {
+    return List.generate(3, (index) {
       final minutesFromNow = 4 + random.nextInt(18) + index * 3;
       final bus = buses.isEmpty ? null : buses[random.nextInt(buses.length)];
       return _Arrival(
@@ -167,7 +167,7 @@ class _ArrivalTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Card(
         child: ListTile(
-          leading: const Icon(Icons.directions_bus, color: AppColors.primary),
+          leading: Image.asset('assets/icons/Bus_logo_png.png'),
           title: Text(arrival.label),
           subtitle: Text(
             'ETA ${arrival.etaMinutes+2} min',

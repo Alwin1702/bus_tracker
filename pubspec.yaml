@@ -41,6 +41,8 @@ dependencies:
   mapbox_maps_flutter: ^2.18.0
   provider: ^6.1.2
   http: ^1.2.2
+  flutter_vlc_player: ^7.4.4
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +69,8 @@ flutter:
   assets:
     - assets/icons/Bus_Left_2.png
     - assets/icons/Bus_Right_2.png
+    - assets/icons/Bus_logo_png.png
+    - assets/videos/bus_camera_footage.mp4
 
   # To add assets to your application, add an assets section, like this:
   # assets:

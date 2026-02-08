@@ -37,6 +37,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    packagingOptions {
+        pickFirsts += "lib/**/libc++_shared.so"
+    }
 }
 
 flutter {

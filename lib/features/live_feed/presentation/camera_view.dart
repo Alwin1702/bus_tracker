@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../map/models/bus.dart';
@@ -125,9 +126,8 @@ class _CctvContent extends StatelessWidget {
         children: [
           Column(
             children: const [
-              _CameraFeedPlaceholder(label: 'Front CCTV'),
-              SizedBox(height: 12),
-              _CameraFeedPlaceholder(label: 'Rear CCTV'),
+              CameraFeed(),
+
             ],
           ),
           
@@ -137,45 +137,42 @@ class _CctvContent extends StatelessWidget {
   }
 }
 
-class _CameraFeedPlaceholder extends StatelessWidget {
-  const _CameraFeedPlaceholder({required this.label});
+class CameraFeed extends StatefulWidget {
+  const CameraFeed({super.key});
 
-  final String label;
+  @override
+  State<CameraFeed> createState() => _CameraFeedState();
+}
+
+class _CameraFeedState extends State<CameraFeed> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset(
+      'assets/videos/bus_camera_footage.mp4',
+    )..initialize().then((_) {
+        setState(() {});
+        _controller.play();
+        _controller.setLooping(true);
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.videocam, color: AppColors.primary, size: 36),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Video stream placeholder',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.neutral,
-                    ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return _controller.value.isInitialized
+        ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          )
+        : const Center(child: CircularProgressIndicator());
   }
 }
+

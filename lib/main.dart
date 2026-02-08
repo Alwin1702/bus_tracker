@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/auth_screen.dart';
+import 'features/auth/presentation/splash_screen.dart';
 import 'features/bus_details/presentation/bus_details_screen.dart';
 import 'features/live_feed/presentation/camera_view.dart';
 import 'features/map/models/bus.dart';
@@ -67,8 +68,12 @@ class PoyoApp extends StatelessWidget {
 }
 
 final GoRouter _router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
     GoRoute(
       path: '/',
       builder: (context, state) => const MapScreen(),
