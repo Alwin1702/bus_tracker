@@ -1,6 +1,29 @@
 # bus_tracker
 
 A new Flutter project.
+# 🚌 Live Bus Tracker – Kozhikode
+
+## 🚀 Overview
+A real-time bus tracking system that helps users track bus locations and plan their travel efficiently.
+
+## ✨ Features
+- Live bus tracking
+- Real-time updates
+- Simple and user-friendly interface
+
+## 🛠️ Tech Stack
+- Flutter
+- Firebase (Realtime Database / Firestore)
+- FlutterFlow etc.
+
+## 👨‍💻 My Contribution
+-  Developed UI and frontend 
+- Worked on real-time data handling and app functionality
+- Collaborated on overall application development
+- Collaborated on development and testing
+
+## 🤝 Team
+Developed as a team project
 
 ## Getting Started
 
